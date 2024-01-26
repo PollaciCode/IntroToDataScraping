@@ -1,0 +1,31 @@
+#Initialize libraries
+import pandas
+from bs4 import BeautifulSoup
+from pip._vendor import requests
+import pprint
+
+#pulls from the website below
+res = requests.get('https://news.ycombinator.com/news')
+
+soup = BeautifulSoup(res.text, 'html.parser') 
+Links = soup.select('.titleline')
+subtext = soup.select('.subtext')
+
+def hn_sort(hnlists):
+    return sorted(hnlists, key= lambda k:k['votes'])
+
+#Cleans data into a list of dictionaries with the title, link, and votes
+def create_custon_hn(Links, subtext): 
+    hn = []
+    for idx, item in enumerate(Links):
+        title = item.getText()
+        href = item.get('href', None)
+        vote = subtext[idx].select('.score')
+        if len(vote):
+            points = int((vote[0]).getText().replace(' points', ''))
+            if points > 99:
+                hn.append({'title':title, 'Link':href, 'votes': points})
+    return hn
+
+   
+pprint.pprint(create_custon_hn(Links, subtext))
